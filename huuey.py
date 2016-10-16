@@ -1,7 +1,7 @@
 
 from requester import Requester
 from paths import Paths
-from hue import Light, Group
+from hue import Light, Group, Schedule
 
 
 class Huuey:
@@ -13,6 +13,7 @@ class Huuey:
     bridges = []
     lights = {}
     groups = {}
+    schedules = {}
 
     verified = False
 
@@ -46,7 +47,7 @@ class Huuey:
         Description:
             Checks if token and address is set and returns true/false
         """
-        if self.token or self.address:
+        if self.token and self.address:
             return True
         return False
 
@@ -101,7 +102,8 @@ class Huuey:
             for key in additional:
                 url = url.replace(key, additional[key])
 
-        return self.requester.request(url=url, type=type.value[0], data=data)
+        request = self.requester.request(url=url, type=type.value[0], data=data)
+        return request
 
     def pair(self, local_id=None):
         """
@@ -111,7 +113,7 @@ class Huuey:
         Args:
             local_id: local index for bridge
         """
-        if id is None:
+        if local_id is None:
             return False
 
         self.address = self.bridges[local_id]['internalipaddress']
@@ -142,8 +144,16 @@ class Huuey:
         self.address = self.bridges[local_id]['internalipaddress']
         self.token = token
 
+        self.update()
+
+    def update(self):
+        """
+        Description:
+            Triggers pulling latest data from the bridge
+        """
         self._grab_lights()
         self._grab_rooms()
+        self._grab_schedules()
 
     def _grab_lights(self):
         """
@@ -154,7 +164,7 @@ class Huuey:
 
         for index in lights:
             lights[index]['_id'] = index
-            self.lights[index] = Light(lights[index], self)
+            self.lights[index] = Light(obj=lights[index], controller=self)
 
     def _grab_rooms(self):
         """
@@ -165,4 +175,15 @@ class Huuey:
 
         for index in groups:
             groups[index]['_id'] = index
-            self.groups[index] = Group(groups[index], self.lights, self)
+            self.groups[index] = Group(obj=groups[index], lights=self.lights, controller=self)
+
+    def _grab_schedules(self):
+        """
+            Description:
+                Grab all schedules from bridge and stores locally on self
+        """
+        schedules = self.request(Paths.Schedules)
+
+        for index, schedule in enumerate(schedules):
+            schedules[schedule]['_id'] = index
+            self.schedules[schedule] = Schedule(parent=self, obj=schedules[schedule])

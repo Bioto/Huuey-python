@@ -1,9 +1,10 @@
 import time
 import argparse
+from random import randint
 
 from cmd2 import Cmd
 from huuey import Huuey
-
+from hue import Schedule, Command
 
 huuey = Huuey()
 
@@ -58,6 +59,24 @@ class CommandLine(Cmd):
 
             for index, group in enumerate(huuey.groups):
                 print u"{index}\t{name}".format(index=index+1, name=huuey.groups[group].name)
+
+        else:
+            if huuey.issetup():
+                print 'No groups found on bridge'
+            else:
+                print 'Session not connected to bridge!'
+
+    def do_schedules(self, args):
+        if not huuey.issetup():
+            print 'This session is not paired! Pair to a bridge first before continuing'
+            return
+
+        if len(huuey.schedules) > 0:
+            print 'List of Schedules \n'
+            print 'ID\tLocal Time\t\tName'
+
+            for index, schedule in enumerate(huuey.schedules):
+                print u"{index}\t{localtime}\t\t{name}".format(index=index, name=huuey.schedules[schedule].name, localtime=huuey.schedules[schedule].localtime)
 
         else:
             if huuey.issetup():
@@ -211,6 +230,18 @@ class CommandLine(Cmd):
             return
         print u"Token: {token}, Address: {address}".format(token=huuey.token, address=huuey.address)
 
+    def do_test_schedule_creation(self, line):
+        """
+        Description:
+            Creates new schedule with a random id
+            Adds command to schedule which is set to activate every light
+        """
+        schedule = Schedule(parent=huuey, name='My New Schedule #' + randint(0, 10000), description='My New Description', localtime='W127/T23:00:00', status=True, autodelete=False)
+        schedule.create_command(address="/groups/0/action", body={
+            'on': True
+        }, method="POST")
+
+        schedule.create()
 
 if __name__ == "__main__":
     CommandLine().cmdloop()
