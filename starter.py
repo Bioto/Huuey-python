@@ -4,7 +4,7 @@ from random import randint
 
 from cmd2 import Cmd
 from huuey import Huuey
-from hue import Schedule, Command
+from hue import Schedule
 
 huuey = Huuey()
 
@@ -161,7 +161,7 @@ class CommandLine(Cmd):
                 if args.delete:
                     huuey.lights[args.id].delete()
                 else:
-                    huuey.lights[args.id].setstate(state).update()
+                    huuey.lights[args.id].setstate(state).update_data()
             else:
                 print 'Light: {light} not found'.format(light=args.id)
 
@@ -170,7 +170,7 @@ class CommandLine(Cmd):
                 if args.delete:
                     huuey.groups[args.id].delete()
                 else:
-                    huuey.groups[args.id].setstate(state).update()
+                    huuey.groups[args.id].setstate(state).update_data()
             else:
                 print 'Group: {light} not found'.format(group=args.id)
 
@@ -242,6 +242,22 @@ class CommandLine(Cmd):
         }, method="POST")
 
         schedule.create()
+
+    def do_test_group_removing_adding_lights(self, line):
+        """
+        Description:
+            1. Removes the first light from the group object then updates the group on the bridge
+            2. Adds the first light back to the group object then updates the group on the bridge
+        """
+        huuey.groups['1'].remove_light(1)
+        huuey.groups['1'].object_update()
+
+        print huuey.groups['1'].update()
+
+        huuey.groups['1'].add_light(1)
+        huuey.groups['1'].object_update()
+
+        print huuey.groups['1'].update()
 
 if __name__ == "__main__":
     CommandLine().cmdloop()

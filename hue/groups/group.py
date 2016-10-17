@@ -1,4 +1,5 @@
 from hue import State
+from hue.lights import Light
 from huuey import Paths
 
 
@@ -14,17 +15,17 @@ class Group:
         action(state): Holds instance of State()
 
         _controller: Reference to main huuey object
-        _newname: Holds string for updating the name of the group
         _id: ID of light
     """
     name = None
-    lights = []
+    lights = {}
     type = ""
     action = None
 
     _controller = None
-    _newname = None
     _id = None
+
+    _only_update = ['name', 'lights']
 
     def __init__(self, obj, lights, controller):
         self._controller = controller
@@ -42,9 +43,64 @@ class Group:
                 self.action = State(obj[key], self)
             elif key == 'lights':
                 for light_id in obj[key]:
-                    self.lights.append(self._controller.lights[light_id])
+                    self.lights[light_id] = self._controller.lights[light_id]
             else:
                 setattr(self, key, obj[key])
+
+    def add_light(self, light):
+        """
+        Description:
+            Adds passed in light (int or object) to group
+
+        Attrs:
+            light: (int or instance) adds light in specific ways depending on type
+        """
+        if type(light) is type(Light):
+            self.lights[light.getid()] = light
+        else:
+            light = self._lights[str(light)]
+            self.lights[light.getid()] = light
+
+    def remove_light(self, light):
+        """
+        Description:
+            Removes passed in light (int or object) to group
+
+        Attrs:
+            light: (int or instance) removes light in specific ways depending on type
+        """
+        if type(light) is type(Light):
+            del self.lights[str(light.getid())]
+        else:
+            del self.lights[str(light)]
+
+    def update(self):
+        """
+        Description:
+            Sends request to update group to the bridge
+        """
+        request = self._controller.request(Paths.GroupPUT, data=self.object_update(), additional={
+            '<id>': self._id
+        })
+        return request
+
+    def object_update(self):
+        """
+        Description:
+            Generates object used for updating name/lights on the group
+        """
+        obj = {
+            'name': self.name,
+            'lights': []
+        }
+
+        for light in self.lights:
+            light_id = self.lights[light].getid()
+
+            if light_id not in obj['lights']:
+                obj['lights'].append(light_id)
+
+        return obj
 
     def setstate(self, obj):
         """
@@ -54,7 +110,7 @@ class Group:
         self.action.update(obj)
         return self
 
-    def update(self):
+    def update_data(self):
         """
         Description:
             Sends request to endpoint then pulls updated data directly from the API

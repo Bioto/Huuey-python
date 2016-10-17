@@ -45,6 +45,9 @@ class Light:
             else:
                 setattr(self, key, obj[key])
 
+    def getid(self):
+        return self._id
+
     def delete(self):
         """
         Description:

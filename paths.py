@@ -10,7 +10,8 @@ class Paths(Enum):
     LightDEL = ('DELETE', '/lights/<id>')
 
     Groups = ('GET', '/groups/')
-    GroupGET = ('GET', '/groups/<id>')
+    GroupGET = ('GET', '/groups/<id>/')
+    GroupPUT = ('PUT', '/groups/<id>/')
 
     Schedules = ('GET', '/schedules/')
     SchedulesPOST = ('POST', '/schedules/')

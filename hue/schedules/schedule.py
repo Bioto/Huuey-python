@@ -85,7 +85,7 @@ class Schedule:
             Triggers actual request to bridge
         """
         request = self._parent.request(type=Paths.SchedulesPOST, data=self.object_create())
-        self._parent.update()
+        self._parent.update_data()
         return request
 
     def delete(self):
@@ -96,5 +96,5 @@ class Schedule:
         request = self._parent.request(type=Paths.SchedulesDEL, additional={
             '<id>': self._id
         })
-        self._parent.update()
+        self._parent.update_data()
         return request
