@@ -3,29 +3,27 @@ from requests import Request, Session
 
 
 class Requester:
-    session = None
+    @staticmethod
+    def verifyconnection(url="http://google.com"):
+        return Requester.request(url, method='GET', decode=False)
 
-    def __init__(self):
-        self.session = Session()
-
-    def verifyconnection(self, url="http://google.com"):
-        return self.request(url, type='GET', decode=False)
-
-    def request(self, url, type=None, data=None, decode=True):
+    @staticmethod
+    def request(url, method=None, data=None, decode=True):
         if not url.startswith('http://') and not url.startswith('https://'):
             url = 'http://' + url
 
-        request = Request(type, url)
+        request = Request(method, url)
 
         if data:
             request.data = json.dumps(data)
 
-        prepped = self.session.prepare_request(request)
+        with Session() as session:
+            prepped = session.prepare_request(request)
 
-        try:
-            response = self.session.send(prepped)
-        except:
-            return False
+            try:
+                response = session.send(prepped)
+            except:
+                return False
 
         if decode:
             return json.loads(response.text)

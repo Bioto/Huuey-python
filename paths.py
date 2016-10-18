@@ -17,6 +17,8 @@ class Paths(Enum):
     SchedulesPOST = ('POST', '/schedules/')
     SchedulesDEL = ('DEL', '/schedules/<id>')
 
+    Scenes = ('GET', '/scenes/')
+
     GroupState = ('PUT', '/groups/<id>/action/')
     LightState = ('PUT', '/lights/<id>/state/')
 

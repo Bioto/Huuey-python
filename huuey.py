@@ -1,12 +1,26 @@
 
 from requester import Requester
 from paths import Paths
-from hue import Light, Group, Schedule
+from hue import Light, Group, Schedule, Scene
+
+
+class ExceptionNoToken(Exception):
+    """
+    Description:
+        Exception that's thrown if a token is not set when making an api call
+    """
+    pass
+
+
+class ExceptionAuthNotSet(Exception):
+    """
+    Description:
+        Exception that's thrown if auth variables are not set
+    """
+    pass
 
 
 class Huuey:
-    requester = None
-
     token = None
     address = None
 
@@ -14,25 +28,11 @@ class Huuey:
     lights = {}
     groups = {}
     schedules = {}
+    scenes = {}
 
     verified = False
 
-    class ExceptionNoToken(Exception):
-        """
-        Description:
-            Exception that's thrown if a token is not set when making an api call
-        """
-        pass
-
-    class ExceptionAuthNotSet(Exception):
-        """
-        Description:
-            Exception that's thrown if auth variables are not set
-        """
-        pass
-
     def __init__(self, token=None, address=None):
-        self.requester = Requester()
         self.token = token
         self.address = address
 
@@ -47,14 +47,12 @@ class Huuey:
         Description:
             Checks if token and address is set and returns true/false
         """
-        if self.token and self.address:
-            return True
-        return False
+        return self.token and self.address
 
     def discover(self):
         """ Grabs list of devices from meethue.com """
-        if self.requester.verifyconnection():
-            self.bridges = self.requester.request('www.meethue.com/api/nupnp', 'GET')
+        if Requester.verifyconnection():
+            self.bridges = Requester.request('www.meethue.com/api/nupnp', 'GET')
 
     def request(self, type=None, data=None, additional=None):
         """ Builds and sends request
@@ -62,6 +60,7 @@ class Huuey:
         Args:
             type: Paths Enum
             data: Dict of data for request
+            additional: Dict of data which takes the key and maps it to the keys value if set in string
 
         Returns:
             After sending the request it returns one of the following:
@@ -94,7 +93,7 @@ class Huuey:
             url = "".join([self.address, type.value[1]])
         else:
             if not token_set:
-                raise self.ExceptionNoToken('Token missing from api call')
+                raise ExceptionNoToken('Token missing from api call')
 
             url = "".join([self.address, "/api/", self.token, type.value[1]])
 
@@ -102,7 +101,7 @@ class Huuey:
             for key in additional:
                 url = url.replace(key, additional[key])
 
-        request = self.requester.request(url=url, type=type.value[0], data=data)
+        request = Requester.request(url=url, method=type.value[0], data=data)
         return request
 
     def pair(self, local_id=None):
@@ -139,7 +138,7 @@ class Huuey:
 
         if not local_id_set and not token_set:
             error = 'Bridge ID or Token not set: [Bridge ID:{}] [Token:{}]'.format(local_id, token)
-            raise self.ExceptionAuthNotSet(error)
+            raise ExceptionAuthNotSet(error)
 
         self.address = self.bridges[local_id]['internalipaddress']
         self.token = token
@@ -154,6 +153,7 @@ class Huuey:
         self._grab_lights()
         self._grab_rooms()
         self._grab_schedules()
+        self._grab_scenes()
 
     def _grab_lights(self):
         """
@@ -187,3 +187,9 @@ class Huuey:
         for index, schedule in enumerate(schedules):
             schedules[schedule]['_id'] = index
             self.schedules[schedule] = Schedule(parent=self, obj=schedules[schedule])
+
+    def _grab_scenes(self):
+        scenes = self.request(Paths.Scenes)
+
+        for scene in scenes:
+            self.scenes[scene] = Scene(obj=scenes[scene], parent=self, id=scene)

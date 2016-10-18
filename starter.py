@@ -17,11 +17,6 @@ class CommandLine(Cmd):
 
     def do_bridges(self, line):
         """Get a list of bridges on the local network"""
-
-        parser = argparse.ArgumentParser(description='Get a list of all bridges on your local network', prog="Bridges")
-
-        args = parser.parse_args(line.split())
-
         print 'List of Bridges \n'
         print 'ID\tAddress'
 
@@ -83,6 +78,15 @@ class CommandLine(Cmd):
                 print 'No groups found on bridge'
             else:
                 print 'Session not connected to bridge!'
+
+    def do_scenes(self, line):
+        """Get a list of scenes on the local network"""
+
+        print 'List of Scenes \n'
+        print 'ID\tName'
+
+        for index, scene in enumerate(huuey.scenes):
+            print u"{index}\t{unique}".format(index=index+1, unique=scene)
 
     def build_state(self, args):
         obj = {}
