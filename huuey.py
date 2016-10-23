@@ -102,6 +102,7 @@ class Huuey:
                 url = url.replace(key, additional[key])
 
         request = Requester.request(url=url, method=type.value[0], data=data)
+
         return request
 
     def pair(self, local_id=None):
@@ -145,15 +146,28 @@ class Huuey:
 
         self.update()
 
+    def create_scene(self, name, lights, recycle):
+        scene_id = Scene.create(name=name, lights=lights, controller=self, recycle=recycle)
+        return self.update()._scan_scenes(scene_id)
+
+    def create_group(self, name, lights):
+        group_id = Group.create(name=name, lights=lights, controller=self)
+        return self.update()._scan_groups(group_id)
+
+    def remove_scene(self, _id):
+        del self.scenes[_id]
+
     def update(self):
         """
         Description:
             Triggers pulling latest data from the bridge
         """
         self._grab_lights()
-        self._grab_rooms()
+        self._grab_groups()
         self._grab_schedules()
         self._grab_scenes()
+
+        return self
 
     def _grab_lights(self):
         """
@@ -166,7 +180,12 @@ class Huuey:
             lights[index]['_id'] = index
             self.lights[index] = Light(obj=lights[index], controller=self)
 
-    def _grab_rooms(self):
+    def _scan_groups(self, _id):
+        for group in self.groups:
+            if self.groups[group].get_id() == _id:
+                return self.groups[group]
+
+    def _grab_groups(self):
         """
             Description:
                 Grab all groups from bridge and stores locally on self
@@ -175,7 +194,7 @@ class Huuey:
 
         for index in groups:
             groups[index]['_id'] = index
-            self.groups[index] = Group(obj=groups[index], lights=self.lights, controller=self)
+            self.groups[index] = Group(obj=groups[index], controller=self)
 
     def _grab_schedules(self):
         """
@@ -188,8 +207,13 @@ class Huuey:
             schedules[schedule]['_id'] = index
             self.schedules[schedule] = Schedule(parent=self, obj=schedules[schedule])
 
+    def _scan_scenes(self, _id):
+        for scene in self.scenes:
+            if self.scenes[scene].get_id() == _id:
+                return self.scenes[scene]
+
     def _grab_scenes(self):
         scenes = self.request(Paths.Scenes)
 
-        for scene in scenes:
-            self.scenes[scene] = Scene(obj=scenes[scene], parent=self, id=scene)
+        for index, scene in enumerate(scenes):
+            self.scenes[index] = Scene(obj=scenes[scene], parent=self, _id=scene)

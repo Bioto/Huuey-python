@@ -18,7 +18,7 @@ class Group:
         _id: ID of light
     """
     name = None
-    lights = {}
+    lights = []
     type = ""
     action = None
 
@@ -27,9 +27,8 @@ class Group:
 
     _only_update = ['name', 'lights']
 
-    def __init__(self, obj, lights, controller):
+    def __init__(self, obj, controller):
         self._controller = controller
-        self._lights = lights
 
         self._map(obj)
 
@@ -43,9 +42,27 @@ class Group:
                 self.action = State(obj[key], self)
             elif key == 'lights':
                 for light_id in obj[key]:
-                    self.lights[light_id] = self._controller.lights[light_id]
+                    self.lights.append(light_id)
             else:
                 setattr(self, key, obj[key])
+
+    def get_id(self):
+        return self._id
+
+    @staticmethod
+    def create(name, lights, controller, type='LightGroup'):
+        request = controller.request(Paths.GroupCREATE, data={
+            'name': name,
+            'lights': lights,
+            'type': type
+        })
+
+        return request[0]['success']['id']
+
+    def delete(self):
+        self._controller.request(Paths.GroupDELETE, additional={
+            'id': self.get_id()
+        })
 
     def add_light(self, light):
         """
@@ -56,10 +73,12 @@ class Group:
             light: (int or instance) adds light in specific ways depending on type
         """
         if type(light) is type(Light):
-            self.lights[light.getid()] = light
+            light_id = light.getid()
+            if light_id not in self.lights:
+                self.lights.append(light_id)
         else:
-            light = self._lights[str(light)]
-            self.lights[light.getid()] = light
+            if light not in self.lights:
+                self.lights.append(str(light))
 
     def remove_light(self, light):
         """
@@ -70,9 +89,11 @@ class Group:
             light: (int or instance) removes light in specific ways depending on type
         """
         if type(light) is type(Light):
-            del self.lights[str(light.getid())]
+            del self.lights[light.getid()]
         else:
-            del self.lights[str(light)]
+            print self.lights
+
+            del self.lights[self.lights.index(str(light))]
 
     def update(self):
         """
@@ -95,11 +116,9 @@ class Group:
         }
 
         for light in self.lights:
-            light_id = self.lights[light].getid()
-
-            if light_id not in obj['lights']:
-                obj['lights'].append(light_id)
-
+            if light not in obj['lights']:
+                obj['lights'].append(light)
+        print obj
         return obj
 
     def setstate(self, obj):

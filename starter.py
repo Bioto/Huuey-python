@@ -17,13 +17,13 @@ class CommandLine(Cmd):
 
     def do_bridges(self, line):
         """Get a list of bridges on the local network"""
-        print 'List of Bridges \n'
+        print 'List of Bridges \n',
         print 'ID\tAddress'
 
         for index, device in enumerate(huuey.bridges):
             print u"{index}\t{device}".format(index=index+1, device=device['internalipaddress'])
 
-    def do_lights(self, args):
+    def do_lights(self, line):
         """ Get a list of all of the active lights """
         if not huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
@@ -42,7 +42,7 @@ class CommandLine(Cmd):
             else:
                 print 'Session not connected to bridge!'
 
-    def do_groups(self, args):
+    def do_groups(self, line):
         """ Get a list of all of the active groups """
         if not huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
@@ -61,7 +61,7 @@ class CommandLine(Cmd):
             else:
                 print 'Session not connected to bridge!'
 
-    def do_schedules(self, args):
+    def do_schedules(self, line):
         if not huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
@@ -118,6 +118,42 @@ class CommandLine(Cmd):
             obj['xy'] = [x, y]
 
         return obj
+
+    def do_call(self, line):
+        if not huuey.issetup():
+            print 'This session is not paired! Pair to a bridge first before continuing'
+            return
+
+        parser = argparse.ArgumentParser(description='Set light or group(s) state', prog="set")
+
+        parser.add_argument('type', choices=['scene'], help="Targets types")
+        parser.add_argument('id', help='ID from command scenes}', type=int)
+
+        args = parser.parse_args(line.split())
+
+        if args.type == "scene":
+            huuey.scenes[args.id].activate()
+
+    def do_create(self, line):
+        if not huuey.issetup():
+            print 'This session is not paired! Pair to a bridge first before continuing'
+            return
+
+        parser = argparse.ArgumentParser(description='', prog="set")
+
+        parser.add_argument('type', choices=['scene', 'group'], help="Target types")
+        parser.add_argument('name', help='New Scene name}', type=str)
+        parser.add_argument('lights', help='ID\'s of lights (ex.. 1,2,3)', type=str)
+
+        # Scene Arguments
+        parser.add_argument('--recycle', type=bool, help="Recycle lights?", default=False)
+
+        args = parser.parse_args(line.split())
+
+        if args.type == "scene":
+            huuey.create_scene(name=args.name, lights=args.lights.split(','), recycle=args.recycle)
+        elif args.type == "group":
+            huuey.create_group(name=args.name, lights=args.lights.split(','))
 
     def do_set(self, line):
         """
