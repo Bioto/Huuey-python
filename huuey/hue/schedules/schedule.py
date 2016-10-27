@@ -1,5 +1,5 @@
 from command import Command
-from huuey import Paths
+from huuey.paths import Paths
 
 
 class Schedule:

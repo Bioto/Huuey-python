@@ -1,4 +1,4 @@
-from huuey import Paths
+from huuey.paths import Paths
 
 
 class Scene:

@@ -1,5 +1,5 @@
-from hue.state import State
-from huuey import Paths
+from huuey.hue.state import State
+from huuey.paths import Paths
 
 
 class Light:

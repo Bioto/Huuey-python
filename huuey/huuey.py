@@ -1,7 +1,9 @@
 
-from requester import Requester
-from paths import Paths
-from hue import Light, Group, Schedule, Scene
+from .requester import Requester
+from .paths import Paths
+from .hue import Light, Group, Schedule, Scene
+
+from cli import CommandLine
 
 
 class ExceptionNoToken(Exception):
@@ -32,13 +34,19 @@ class Huuey:
 
     verified = False
 
+    def cli(self):
+        print 'Starting command line...'
+        cmd = CommandLine()
+        cmd.huuey = self
+        cmd.cmdloop()
+
     def __init__(self, token=None, address=None):
         self.token = token
         self.address = address
 
         auth_set = self.token is None
         address_set = self.address is None
-
+        
         if auth_set or address_set:
             self.discover()
 
@@ -52,7 +60,8 @@ class Huuey:
     def discover(self):
         """ Grabs list of devices from meethue.com """
         if Requester.verifyconnection():
-            self.bridges = Requester.request('www.meethue.com/api/nupnp', 'GET')
+            self.bridges = Requester.request('www.meethue.com/api/nupnp',
+                                             'GET')
 
     def request(self, type=None, data=None, additional=None):
         """ Builds and sends request
@@ -102,7 +111,7 @@ class Huuey:
                 url = url.replace(key, additional[key])
 
         request = Requester.request(url=url, method=type.value[0], data=data)
-
+        
         return request
 
     def pair(self, local_id=None):

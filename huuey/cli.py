@@ -3,14 +3,11 @@ import argparse
 from random import randint
 
 from cmd2 import Cmd
-from huuey import Huuey
 from hue import Schedule
-
-huuey = Huuey()
-
 
 class CommandLine(Cmd):
     prompt = '=>'
+    huuey = None
 
     def do_show(self, arg, opts):
         pass
@@ -20,61 +17,61 @@ class CommandLine(Cmd):
         print 'List of Bridges \n',
         print 'ID\tAddress'
 
-        for index, device in enumerate(huuey.bridges):
+        for index, device in enumerate(self.huuey.bridges):
             print u"{index}\t{device}".format(index=index+1, device=device['internalipaddress'])
 
     def do_lights(self, line):
         """ Get a list of all of the active lights """
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
-        if len(huuey.lights) > 0:
+        if len(self.huuey.lights) > 0:
             print 'List of Lights \n'
             print 'ID\tUnique'
 
-            for index, light in enumerate(huuey.lights):
-                print u"{index}\t{unique}".format(index=index+1, unique=huuey.lights[light].uniqueid)
+            for index, light in enumerate(self.huuey.lights):
+                print u"{index}\t{unique}".format(index=index+1, unique=self.huuey.lights[light].uniqueid)
 
         else:
-            if huuey.issetup():
+            if self.huuey.issetup():
                 print 'No lights found on bridge'
             else:
                 print 'Session not connected to bridge!'
 
     def do_groups(self, line):
         """ Get a list of all of the active groups """
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
-        if len(huuey.groups) > 0:
+        if len(self.huuey.groups) > 0:
             print 'List of Groups \n'
             print 'ID\tName'
 
-            for index, group in enumerate(huuey.groups):
-                print u"{index}\t{name}".format(index=index+1, name=huuey.groups[group].name)
+            for index, group in enumerate(self.huuey.groups):
+                print u"{index}\t{name}".format(index=index+1, name=self.huuey.groups[group].name)
 
         else:
-            if huuey.issetup():
+            if self.huuey.issetup():
                 print 'No groups found on bridge'
             else:
                 print 'Session not connected to bridge!'
 
     def do_schedules(self, line):
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
-        if len(huuey.schedules) > 0:
+        if len(self.huuey.schedules) > 0:
             print 'List of Schedules \n'
             print 'ID\tLocal Time\t\tName'
 
-            for index, schedule in enumerate(huuey.schedules):
-                print u"{index}\t{localtime}\t\t{name}".format(index=index, name=huuey.schedules[schedule].name, localtime=huuey.schedules[schedule].localtime)
+            for index, schedule in enumerate(self.huuey.schedules):
+                print u"{index}\t{localtime}\t\t{name}".format(index=index, name=self.huuey.schedules[schedule].name, localtime=self.huuey.schedules[schedule].localtime)
 
         else:
-            if huuey.issetup():
+            if self.huuey.issetup():
                 print 'No groups found on bridge'
             else:
                 print 'Session not connected to bridge!'
@@ -85,7 +82,7 @@ class CommandLine(Cmd):
         print 'List of Scenes \n'
         print 'ID\tName'
 
-        for index, scene in enumerate(huuey.scenes):
+        for index, scene in enumerate(self.huuey.scenes):
             print u"{index}\t{unique}".format(index=index+1, unique=scene)
 
     def build_state(self, args):
@@ -120,7 +117,7 @@ class CommandLine(Cmd):
         return obj
 
     def do_call(self, line):
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
@@ -132,10 +129,10 @@ class CommandLine(Cmd):
         args = parser.parse_args(line.split())
 
         if args.type == "scene":
-            huuey.scenes[args.id].activate()
+            self.huuey.scenes[args.id].activate()
 
     def do_create(self, line):
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
@@ -151,9 +148,9 @@ class CommandLine(Cmd):
         args = parser.parse_args(line.split())
 
         if args.type == "scene":
-            huuey.create_scene(name=args.name, lights=args.lights.split(','), recycle=args.recycle)
+            self.huuey.create_scene(name=args.name, lights=args.lights.split(','), recycle=args.recycle)
         elif args.type == "group":
-            huuey.create_group(name=args.name, lights=args.lights.split(','))
+            self.huuey.create_group(name=args.name, lights=args.lights.split(','))
 
     def do_set(self, line):
         """
@@ -164,7 +161,7 @@ class CommandLine(Cmd):
             type: Specifies light or group for updating
             id: Target for changes
         """
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
 
@@ -197,20 +194,20 @@ class CommandLine(Cmd):
         state = self.build_state(args)
 
         if args.type == 'light':
-            if args.id in huuey.lights:
+            if args.id in self.huuey.lights:
                 if args.delete:
-                    huuey.lights[args.id].delete()
+                    self.huuey.lights[args.id].delete()
                 else:
-                    huuey.lights[args.id].setstate(state).update_data()
+                    self.huuey.lights[args.id].setstate(state).update_data()
             else:
                 print 'Light: {light} not found'.format(light=args.id)
 
         if args.type == 'group':
-            if args.id in huuey.groups:
+            if args.id in self.huuey.groups:
                 if args.delete:
-                    huuey.groups[args.id].delete()
+                    self.huuey.groups[args.id].delete()
                 else:
-                    huuey.groups[args.id].setstate(state).update_data()
+                    self.huuey.groups[args.id].setstate(state).update_data()
             else:
                 print 'Group: {light} not found'.format(group=args.id)
 
@@ -246,7 +243,7 @@ class CommandLine(Cmd):
         end_time = time.time() + args.timeout
 
         while True and time.time() < end_time:
-            request = huuey.pair(int(args.id) - 1)
+            request = self.huuey.pair(int(args.id) - 1)
 
             if request:
                 if 'success' in request[0]:
@@ -256,7 +253,7 @@ class CommandLine(Cmd):
             time.sleep(args.interval)
 
         if data is not None:
-            huuey.set_auth(int(args.id) - 1, data['username'])
+            self.huuey.set_auth(int(args.id) - 1, data['username'])
 
             print 'Bridge paired!'
 
@@ -265,10 +262,10 @@ class CommandLine(Cmd):
         Description:
             Basic command to list authentication values
         """
-        if not huuey.issetup():
+        if not self.huuey.issetup():
             print 'This session is not paired! Pair to a bridge first before continuing'
             return
-        print u"Token: {token}, Address: {address}".format(token=huuey.token, address=huuey.address)
+        print u"Token: {token}, Address: {address}".format(token=self.huuey.token, address=self.huuey.address)
 
     def do_test_schedule_creation(self, line):
         """
@@ -289,15 +286,12 @@ class CommandLine(Cmd):
             1. Removes the first light from the group object then updates the group on the bridge
             2. Adds the first light back to the group object then updates the group on the bridge
         """
-        huuey.groups['1'].remove_light(1)
-        huuey.groups['1'].object_update()
+        self.huuey.groups['1'].remove_light(1)
+        self.huuey.groups['1'].object_update()
 
-        print huuey.groups['1'].update()
+        print self.huuey.groups['1'].update()
 
-        huuey.groups['1'].add_light(1)
-        huuey.groups['1'].object_update()
+        self.huuey.groups['1'].add_light(1)
+        self.huuey.groups['1'].object_update()
 
-        print huuey.groups['1'].update()
-
-if __name__ == "__main__":
-    CommandLine().cmdloop()
+        print self.huuey.groups['1'].update()

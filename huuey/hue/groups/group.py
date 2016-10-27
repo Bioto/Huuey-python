@@ -1,6 +1,7 @@
-from hue import State
-from hue.lights import Light
-from huuey import Paths
+from huuey.paths import Paths
+
+from huuey.hue import State
+from huuey.hue.lights import Light
 
 
 class Group:
