@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
 
-print find_packages()
-
 setup(name='Huuey',
       version='0.1',
       description='Handles managing phillips hue lights',
