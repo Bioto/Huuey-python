@@ -2,6 +2,4 @@
 
 
 ### Install
-```
-pip install Huuey
-```
+`pip install Huuey`
