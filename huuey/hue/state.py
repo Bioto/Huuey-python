@@ -32,8 +32,9 @@ class State:
     colormode = None
     reachable = None
 
-    _only = ['on', 'bri', 'hue', 'sat', 'xy', 'ct', 'alert', 'effect', 'transitiontime', 'bri_inc', 'sat_inc',
-             'hue_inc', 'ct_inc', 'xy_inc']
+    _only = ['on', 'bri', 'hue', 'sat', 'xy', 'ct', 'alert', 'effect',
+             'transitiontime', 'bri_inc', 'sat_inc', 'hue_inc', 'ct_inc',
+             'xy_inc']
 
     _parent = None
     _updated_values = []
@@ -63,7 +64,10 @@ class State:
         Description:
             Returns dictionary full of variables on this object
         """
-        class_variables = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith(('__', '_'))]
+        class_variables = [
+            attr for attr in dir(self)
+            if not callable(getattr(self, attr)) and not attr.startswith(
+                    ('__', '_'))]
         obj = {}
 
         for key in class_variables:

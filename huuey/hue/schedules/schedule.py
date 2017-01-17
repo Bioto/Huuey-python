@@ -68,7 +68,8 @@ class Schedule:
     def object_create(self):
         """
         Description:
-            Creates object with specific fields required for creating a new schedule
+            Creates object with specific fields required for
+            creating a new schedule
         """
         obj = {}
 
@@ -84,7 +85,8 @@ class Schedule:
         Description:
             Triggers actual request to bridge
         """
-        request = self._parent.request(type=Paths.SchedulesPOST, data=self.object_create())
+        request = self._parent.request(type=Paths.SchedulesPOST,
+                                       data=self.object_create())
         self._parent.update_data()
         return request
 

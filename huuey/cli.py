@@ -5,6 +5,7 @@ from random import randint
 from cmd2 import Cmd
 from hue import Schedule
 
+
 class CommandLine(Cmd):
     prompt = '=>'
     huuey = None
@@ -14,8 +15,8 @@ class CommandLine(Cmd):
 
     def do_bridges(self, line):
         """Get a list of bridges on the local network"""
-        print 'List of Bridges \n',
-        print 'ID\tAddress'
+        print('List of Bridges \n')
+        print('ID\tAddress')
 
         for index, device in enumerate(self.huuey.bridges):
             print u"{index}\t{device}".format(index=index+1, device=device['internalipaddress'])
@@ -198,7 +199,7 @@ class CommandLine(Cmd):
                 if args.delete:
                     self.huuey.lights[args.id].delete()
                 else:
-                    self.huuey.lights[args.id].setstate(state).update_data()
+                    self.huuey.lights[args.id].setstate(state).update()
             else:
                 print 'Light: {light} not found'.format(light=args.id)
 
@@ -207,7 +208,7 @@ class CommandLine(Cmd):
                 if args.delete:
                     self.huuey.groups[args.id].delete()
                 else:
-                    self.huuey.groups[args.id].setstate(state).update_data()
+                    self.huuey.groups[args.id].setstate(state).update()
             else:
                 print 'Group: {light} not found'.format(group=args.id)
 

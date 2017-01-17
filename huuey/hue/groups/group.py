@@ -20,7 +20,6 @@ class Group:
     """
     name = None
     lights = []
-    type = ""
     action = None
 
     _controller = None
@@ -71,7 +70,8 @@ class Group:
             Adds passed in light (int or object) to group
 
         Attrs:
-            light: (int or instance) adds light in specific ways depending on type
+            light: (int or instance) adds light in specific
+                                     ways depending on type
         """
         if type(light) is type(Light):
             light_id = light.getid()
@@ -87,24 +87,13 @@ class Group:
             Removes passed in light (int or object) to group
 
         Attrs:
-            light: (int or instance) removes light in specific ways depending on type
+            light: (int or instance) removes light in specific
+                                     ways depending on type
         """
         if type(light) is type(Light):
             del self.lights[light.getid()]
         else:
-            print self.lights
-
             del self.lights[self.lights.index(str(light))]
-
-    def update(self):
-        """
-        Description:
-            Sends request to update group to the bridge
-        """
-        request = self._controller.request(Paths.GroupPUT, data=self.object_update(), additional={
-            '<id>': self._id
-        })
-        return request
 
     def object_update(self):
         """
@@ -119,7 +108,7 @@ class Group:
         for light in self.lights:
             if light not in obj['lights']:
                 obj['lights'].append(light)
-        print obj
+
         return obj
 
     def setstate(self, obj):
@@ -130,14 +119,16 @@ class Group:
         self.action.update(obj)
         return self
 
-    def update_data(self):
+    def update(self):
         """
         Description:
-            Sends request to endpoint then pulls updated data directly from the API
+            Sends request to endpoint then pulls updated data
+            directly from the API
         """
-        self._controller.request(Paths.GroupState, self.action.object(), additional={
-            '<id>': self._id
-        })
+        self._controller.request(Paths.GroupState, self.action.object(),
+                                 additional={
+                                     '<id>': self._id
+                                 })
         self.grab()
 
     def grab(self):

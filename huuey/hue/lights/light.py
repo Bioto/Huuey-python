@@ -9,7 +9,6 @@ class Light:
 
     Attrs:
         state: Holds instance of State()
-        type: Type of group
         name: Name of the group
         modelid: Type of Light
         swversion: Software Version
@@ -20,7 +19,6 @@ class Light:
         _newname: Holds string for updating the name of the group
     """
     state = None
-    type = None
     name = None
     modelid = None
     swversion = None
@@ -72,9 +70,11 @@ class Light:
     def update(self):
         """
         Description:
-            Sends request to endpoint then pulls updated data directly from the API
+            Sends request to endpoint then pulls updated data
+            directly from the API
 
-            If _newname is set it will send the request to update the name first
+            If _newname is set it will send the request to
+            update the name first
             then trigger main request
         """
         if self._newname:
@@ -86,9 +86,10 @@ class Light:
 
             self._newname = None
 
-        self._controller.request(Paths.LightState, self.state.object(), additional={
-            '<id>': self._id
-        })
+        self._controller.request(Paths.LightState, self.state.object(),
+                                 additional={
+                                     '<id>': self._id
+                                 })
         self.grab()
 
     def grab(self):

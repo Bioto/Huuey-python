@@ -1,6 +1,6 @@
 
-from .requester import Requester
-from .paths import Paths
+from requester import Requester
+from paths import Paths
 from .hue import Light, Group, Schedule, Scene
 
 from cli import CommandLine
@@ -35,7 +35,7 @@ class Huuey:
     verified = False
 
     def cli(self):
-        print 'Starting command line...'
+        print('Starting command line...')
         cmd = CommandLine()
         cmd.huuey = self
         cmd.cmdloop()
@@ -46,7 +46,7 @@ class Huuey:
 
         auth_set = self.token is None
         address_set = self.address is None
-        
+
         if auth_set or address_set:
             self.discover()
 
