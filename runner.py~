@@ -1,3 +1,0 @@
-from huuey import Huuey
-
-huuey = Huuey()
