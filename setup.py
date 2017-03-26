@@ -5,6 +5,6 @@ setup(name='Huuey',
       description='Handles managing phillips hue lights',
       url='https://github.com/Bioto/Huuey-python',
       author='Nicholas Young',
-      author_email='nick@coding.exposed',
+      author_email='nick@bolted.io',
       license='MIT',
       packages=find_packages())
